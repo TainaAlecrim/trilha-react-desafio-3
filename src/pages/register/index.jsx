@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { MdEmail, MdLock } from 'react-icons/md';
+import { MdEmail, MdLock, MdPerson } from 'react-icons/md';
 import { Button } from '../../components/Button';
 import { Header } from '../../components/Header';
 import { Input } from '../../components/Input';
 import { api } from '../../services/api';
 import { useForm } from "react-hook-form";
-import { Container, Title, Column, TitleLogin, SubtitleLogin, EsqueciText, CriarText, Row, Wrapper } from './styles';
+import { Container, Title, Column, TitleLogin, SubtitleLogin, Row, Wrapper, CriarText } from './styles';
 
-const Login = () => {
+const Register = () => {
     const navigate = useNavigate();
     const { control, handleSubmit, formState: { errors } } = useForm({
         reValidateMode: 'onChange',
@@ -18,17 +18,11 @@ const Login = () => {
 
     const onSubmit = async (formData) => {
         try {
-            const { data } = await api.get(`/users?email=${formData.email}&senha=${formData.senha}`);
-
-            if (data.length && data[0].id) {
-                navigate('/feed');
-                return;
-            }
-
-            setError('Usuário ou senha inválido');
+            await api.post('/users', formData);
+            navigate('/login');
         } catch (e) {
-            console.error('Houve um erro ao tentar realizar a requisição:', e);
-            setError('Ocorreu um erro ao tentar fazer login. Por favor, tente novamente mais tarde.');
+            console.error('Houve um erro ao tentar realizar o cadastro:', e);
+            setError('Ocorreu um erro ao tentar realizar o cadastro. Por favor, tente novamente mais tarde.');
         }
     };
 
@@ -44,9 +38,18 @@ const Login = () => {
                 </Column>
                 <Column>
                     <Wrapper>
-                        <TitleLogin>Faça seu cadastro</TitleLogin>
-                        <SubtitleLogin>Faça seu login e make the change._</SubtitleLogin>
+                        <TitleLogin>Crie sua conta</TitleLogin>
+                        <SubtitleLogin>Preencha os campos abaixo para criar sua conta.</SubtitleLogin>
                         <form onSubmit={handleSubmit(onSubmit)}>
+                            <Input
+                                placeholder="Nome completo"
+                                leftIcon={<MdPerson />}
+                                name="nome"
+                                control={control}
+                                rules={{ required: 'Nome completo é obrigatório' }}
+                                error={errors.nome}
+                            />
+                            {errors.nome && <span>{errors.nome.message}</span>}
                             <Input
                                 placeholder="E-mail"
                                 leftIcon={<MdEmail />}
@@ -66,12 +69,11 @@ const Login = () => {
                                 error={errors.senha}
                             />
                             {errors.senha && <span>{errors.senha.message}</span>}
-                            <Button title="Entrar" variant="secondary" type="submit" />
+                            <Button title="Criar Minha Conta" variant="secondary" type="submit" />
                             {error && <p style={{ color: 'red' }}>{error}</p>}
                         </form>
                         <Row>
-                            <EsqueciText>Esqueci minha senha</EsqueciText>
-                            <CriarText>Criar Conta</CriarText>
+                            <CriarText onClick={() => navigate('/login')}>Já tenho uma conta</CriarText>
                         </Row>
                     </Wrapper>
                 </Column>
@@ -80,4 +82,4 @@ const Login = () => {
     );
 };
 
-export { Login };
+export { Register };
